@@ -69,3 +69,7 @@ for wildcard in fname_wildcards:
             os.system('rm {}'.format(fnames_from_most_recent[idx]))
         
                   
+        
+    
+    
+
