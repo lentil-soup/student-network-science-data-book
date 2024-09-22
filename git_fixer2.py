@@ -72,15 +72,10 @@ with open('tracked_files.txt', 'r') as f:
         # - files in assignments directory
         ignore_patterns = ['MODIFIED', 'assignments/',]
         
-        if any(file_path in glob.glob(wildcard) for wildcard in GIT_FIXER_REMOVE):
-            to_remove.append(file_path)
-        
-        elif any(file_path in glob.glob(wildcard) for wildcard in GIT_FIXER_IGNORE):
-            to_ignore.append(file_path)
         # Also take command line arguments for additional ignore patterns
         # Usage: python3 git_fixer2.py --ignore="some_file_name,some_directory_name/"
-        
-        else:
+         
+        if all(pattern not in glob.glob(pattern) for pattern in GIT_FIXER_IGNORE):
             # Compare each file with its upstream version
             result = compare_with_upstream(file_path)
             if result is not None and result != 0:
@@ -99,23 +94,8 @@ for file_path in modified_files:
     # Revert the original file to the upstream version
     revert_to_upstream(file_path)
 
-print(to_remove)
-for file_path in to_remove:
-    os.remove(file_path)
-
-gitattributes = set()
-with open('.gitattributes', 'r') as f:
-    for line in f.readlines():
-        gitattributes.add(line.strip())
-
-print(to_ignore)
-for file_path in to_ignore:
-    my_line = "{} merge=ours".format(file_path)
-    if my_line in gitattributes:
-        continue
-    else:
-        os.system('echo "{} merge=ours" >> .gitattributes'.format(file_path))
-
+for wildcard in GIT_FIXER_REMOVE:
+    os.system('rm -f {}'.format(wildcard))
 # Now merge the upstream changes without affecting the original files
 os.system('git merge --no-commit upstream/main')
 
